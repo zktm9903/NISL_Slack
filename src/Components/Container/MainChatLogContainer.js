@@ -9,7 +9,7 @@ const MainChatLogContainer = ({ room, channel }) => {
     return (
         <MainChatLogPresenter>
             {room !== 0 && channel !== 0 && store.rooms[room - 1].channels[channel - 1].chat.map(log => (
-                store.myid === log.user_name ?
+                store.myid === log.maker ?
                     <MyBubbleContainer log={log} /> :
                     <OpponentBubbleContainer log={log} />
             ))}

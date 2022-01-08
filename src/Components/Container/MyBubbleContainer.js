@@ -6,7 +6,7 @@ const MyBubbleContainer = ({ log }) => {
 
     return (
         <BubbleBox>
-            <MyName>{log.user_name}</MyName>
+            <MyName>{log.maker}</MyName>
             <MyDate>{log.created}</MyDate>
             <MyContent>{log.content}</MyContent>
         </BubbleBox>

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { addChannel, pullRoom } from '../modules/roomAndChannel';
+import { addChannel, pullRoom, receiveChat } from '../modules/roomAndChannel';
 
 export const pullAllRoom = async (dispatch, user_name) => {
     try {
@@ -32,9 +32,11 @@ export const pullChannelInRoom = async (store, dispatch, room_name) => {
         let nextId = 1;
         await res.data.content.map(channel => {
             const reduxRoomId = store.rooms.find(reduxRoom => reduxRoom.name === channel.channel_name).id;
-            console.log(store.rooms[reduxRoomId - 1].name);
-            console.log(channel.name)
+            // console.log(store.rooms[reduxRoomId - 1].name);
+            // console.log(channel.name)
             dispatch(addChannel(nextId++, channel.name, reduxRoomId));
+
+            pullChat(dispatch, store.rooms[reduxRoomId - 1].name, channel.name)
             store.socket.emit("chat_join", [{
                 channel_name: store.rooms[reduxRoomId - 1].name,
                 room_name: channel.name,
@@ -43,7 +45,6 @@ export const pullChannelInRoom = async (store, dispatch, room_name) => {
     } catch (e) {
         console.log(e)
     }
-
 }
 
 export const pullChat = async (dispatch, room_name, channel_name) => {
@@ -51,8 +52,11 @@ export const pullChat = async (dispatch, room_name, channel_name) => {
         channel_name: room_name,
         room_name: channel_name,
     })
-
     await console.log(res.data.content)
+
+    res.data.content.map(chat => {
+        dispatch(receiveChat(chat))
+    })
 
 
 }
