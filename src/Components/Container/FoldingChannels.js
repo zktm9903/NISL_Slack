@@ -48,7 +48,7 @@ const FoldingChannels = ({ rooms }) => {
                 <Accordion.Header>Channels</Accordion.Header>
                 <AccordionBodyPadding>
                     {rooms.channels.map(channel => (
-                        <ChannelButton roomId={channel.id} onClick={() => chooseChannel(channel.id)}># {channel.name} </ChannelButton>
+                        <ChannelButton key={channel.id} onClick={() => chooseChannel(channel.id)}># {channel.name} </ChannelButton>
                     ))}
                     <ChannelButton onClick={() => setShow(true)}>+channel</ChannelButton>
                     <PlusChannelContainer set={show} setShow={handleClose} InsertChannel={InsertChannel} InputChannelName={InputChannelName} />

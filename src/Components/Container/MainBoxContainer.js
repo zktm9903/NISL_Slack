@@ -1,10 +1,10 @@
 import MainTopNavContainer from "./MainTopNavContainer"
 import MainBottomContainer from "./MainBottomContainer"
 
-const MainBoxContainer = () => {
+const MainBoxContainer = ({ offFunc }) => {
     return (
         <>
-            <MainTopNavContainer />
+            <MainTopNavContainer offFunc={offFunc} />
             <MainBottomContainer />
         </>
     )

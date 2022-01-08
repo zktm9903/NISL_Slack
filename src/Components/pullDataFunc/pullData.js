@@ -52,9 +52,9 @@ export const pullChat = async (dispatch, room_name, channel_name) => {
         channel_name: room_name,
         room_name: channel_name,
     })
-    await console.log(res.data.content)
+    //await console.log(res.data.content)
 
-    res.data.content.map(chat => {
+    await res.data.content.map(chat => {
         dispatch(receiveChat(chat))
     })
 

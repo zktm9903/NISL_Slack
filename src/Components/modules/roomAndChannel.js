@@ -9,10 +9,16 @@ const ADD_CHANNEL = "roomAndChannel/ADD_CHANNEL";
 const SELECT_CHANNEL = "roomAndChannel/SELECT_CHANNEL";
 const RECEIVE_CHAT = "roomAndChannel/RECEIVE_CHAT";
 const PULL_ROOM = "roomAndChannel/PULL_ROOM";
-
+const LOGOUT = "roomAndChannel/LOGOUT"
 //비디오 타입 추가
 const ADD_VIDEO = "roomAndChannel/ADD_VIDEO";
 const SELECT_VIDEO = "roomAndChannel/SELECT_VIDEO";
+
+export const logout = () => {
+  return ({
+    type: LOGOUT,
+  })
+}
 
 export const pullRoom = (rooms) => {
   return ({
@@ -155,6 +161,14 @@ const initialState = {
 
 export default function roomAndChannel(state = initialState, action) {
   switch (action.type) {
+    case LOGOUT:
+      return {
+        ...state, socket: null,
+        myid: '',
+        selectRoom: 0,
+        selectChannel: 0,
+        rooms: []
+      }
     case INIT_SOCKET:
       return { ...state, socket: action.socket };
     case PULL_ROOM:

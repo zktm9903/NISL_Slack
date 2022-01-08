@@ -14,7 +14,7 @@ const BackDiv = styled.div`
 
 const socket = io.connect("http://localhost:80");
 
-const Main = () => {
+const Main = ({ offFunc }) => {
     const dispatch = useDispatch();
     const store = useSelector(state => state);
     useEffect(() => {
@@ -29,7 +29,7 @@ const Main = () => {
     }, [store.rooms.length])
     return (
         <BackDiv>
-            <MainBoxContainer />
+            <MainBoxContainer offFunc={offFunc} />
         </BackDiv>
     )
 }

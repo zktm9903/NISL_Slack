@@ -6,6 +6,7 @@ import Modal from 'react-modal';
 import Main from "../../Main";
 import { useDispatch } from "react-redux";
 import { setMyid } from "../modules/roomAndChannel";
+import { logout } from "../modules/roomAndChannel";
 
 const FormControl = styled(Form.Control)`
     width: 400px;
@@ -45,8 +46,11 @@ const LoginBoxFormContainer = () => {
             <Button variant="primary" onClick={LoginButtonClick}>
                 Submit
             </Button>
-            <Modal2 isOpen={isOpen}>
-                <Main />
+            <Modal2 isOpen={isOpen} ariaHideApp={false}>
+                <Main offFunc={() => {
+                    setIsOpen(false);
+                    dispatch(logout());
+                }} />
             </Modal2>
         </Form>
     )
