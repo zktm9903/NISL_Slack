@@ -20,6 +20,10 @@ const Main = ({ offFunc }) => {
         socket.on('chat_message', function (data) {
             dispatch(receiveChat(data));
         });
+
+        socket.on('add_memeber', function (data) {
+            console.log(data);
+        })
         dispatch(initSocket(socket));
         pullAllRoom(dispatch, store.myid);
     }, [])
