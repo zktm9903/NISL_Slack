@@ -4,9 +4,10 @@ import styled from "styled-components";
 import { useState } from "react";
 import Modal from 'react-modal';
 import Main from "../../Main";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setMyid } from "../modules/roomAndChannel";
 import { logout } from "../modules/roomAndChannel";
+import { loginUser, logoutUser } from "../pullDataFunc/loginData";
 
 const FormControl = styled(Form.Control)`
     width: 400px;
@@ -20,6 +21,7 @@ const Modal2 = styled(Modal)`
 
 const LoginBoxFormContainer = () => {
     const dispatch = useDispatch();
+    const store = useSelector(state => state);
 
     const [ID, setID] = useState('');
     const [PW, setPW] = useState('');
@@ -28,8 +30,7 @@ const LoginBoxFormContainer = () => {
     const LoginButtonClick = () => {
         console.log('loginButtonClick : ' + ID + '/' + PW);
 
-        dispatch(setMyid(ID));
-        setIsOpen(true);
+        loginUser(dispatch, ID, setIsOpen)
     }
 
     return (
@@ -48,8 +49,7 @@ const LoginBoxFormContainer = () => {
             </Button>
             <Modal2 isOpen={isOpen} ariaHideApp={false}>
                 <Main offFunc={() => {
-                    setIsOpen(false);
-                    dispatch(logout());
+                    logoutUser(dispatch, store.myid, setIsOpen);
                 }} />
             </Modal2>
         </Form>
