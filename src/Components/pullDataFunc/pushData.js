@@ -38,6 +38,7 @@ export const makeChannel = async (dispatch, channel_id, user_name, channel_name,
             user_name: user_name,
             channel_name: room_name,
             room_name: channel_name,
+            room_type: 'chat'
         })
 
         await dispatch(addChannel(channel_id, channel_name, 0));

@@ -18,6 +18,7 @@ const Main = ({ offFunc }) => {
     useEffect(() => {
         const socket = io.connect("http://localhost:80");
         socket.on('chat_message', function (data) {
+            data.maker = data.user_name;
             dispatch(receiveChat(data));
         });
 

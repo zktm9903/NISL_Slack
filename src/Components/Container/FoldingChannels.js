@@ -32,8 +32,11 @@ const FoldingChannels = ({ rooms }) => {
     }
 
     const InsertChannel = () => {
-        if (store.rooms[store.selectRoom - 1] !== undefined)
-            makeChannel(dispatch, store.rooms[store.selectRoom - 1].channels.length, store.myid, channelName, store.rooms[store.selectRoom - 1].name)
+        if (store.rooms[store.selectRoom - 1] !== undefined) {
+            console.log(store.rooms[store.selectRoom - 1].channels.length)
+            makeChannel(dispatch, store.rooms[store.selectRoom - 1].channels.length + 1, store.myid, channelName, store.rooms[store.selectRoom - 1].name)
+        }
+
         //dispatch(addChannel(store.rooms[store.selectRoom - 1].channels.length + 1, channelName))
     }
 
