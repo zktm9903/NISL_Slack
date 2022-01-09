@@ -21,7 +21,7 @@ const MainRoomNameContainer = ({ selectRoom }) => {
     const [InputId, setInputId] = useState('');
 
     const InvitePerson = () => {
-        insertUserInChannel(store.rooms[store.selectRoom - 1].name, InputId)
+        insertUserInChannel(store, store.rooms[store.selectRoom - 1].name, InputId)
         console.log(InputId)
     }
 

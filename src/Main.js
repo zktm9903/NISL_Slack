@@ -12,12 +12,11 @@ const BackDiv = styled.div`
     height: 100%;
 `
 
-const socket = io.connect("http://localhost:80");
-
 const Main = ({ offFunc }) => {
     const dispatch = useDispatch();
     const store = useSelector(state => state);
     useEffect(() => {
+        const socket = io.connect("http://localhost:80");
         socket.on('chat_message', function (data) {
             dispatch(receiveChat(data));
         });

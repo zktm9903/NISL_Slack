@@ -15,11 +15,14 @@ export const makeRoom = async (dispatch, channel_name, user_name) => {
     }
 }
 
-export const insertUserInChannel = async (channel_name, user_name) => {
+export const insertUserInChannel = async (store, channel_name, user_name) => {
     try {
-        console.log(channel_name);
-        console.log(user_name);
         const res = await axios.post('http://localhost:80/channel/member', {
+            channel_name: channel_name,
+            user_name: user_name,
+        })
+
+        store.socket.emit("add_member", {
             channel_name: channel_name,
             user_name: user_name,
         })

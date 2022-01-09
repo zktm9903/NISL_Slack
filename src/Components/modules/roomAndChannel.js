@@ -162,6 +162,8 @@ const initialState = {
 export default function roomAndChannel(state = initialState, action) {
   switch (action.type) {
     case LOGOUT:
+      nextRoomId = 1;
+      state.socket.disconnect();
       return {
         ...state, socket: null,
         myid: '',
