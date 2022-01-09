@@ -43,16 +43,25 @@ function Rtc() {
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
-  const [videoMember, setVideoMember] = useState(0);
+
+  //모달용 state
+  const [showModal, setShowModal] = useState(false);
+
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
 
   const userVideo = useRef();
   const partnerVideo = useRef();
   const socket = useRef();
 
   useEffect(() => {
-    socket.current = io.connect("http://localhost:8000", {
-      transports: ["websocket"],
-    });
+    console.log(socket);
+    socket.current = io.connect("/");
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
@@ -62,68 +71,62 @@ function Rtc() {
         }
       });
 
-    socket.current.on("yourID", (id) => {
+    socket.current.on("rtc_yourID", (id) => {
       setYourID(id);
     });
-    socket.current.on("allUsers", (users) => {
+    socket.current.on("rtc_allUsers", (users) => {
       setUsers(users);
     });
 
-    socket.current.on("hey", (data) => {
+    socket.current.emit("rtc_ID", (data, users) => {
+      setYourID(data);
+      setUsers(users);
+    });
+
+    socket.current.on("rtc_hey", (data) => {
       setReceivingCall(true);
       setCaller(data.from);
       setCallerSignal(data.signal);
     });
-    console.log(socket.current.on("hey"));
   }, []);
 
   function callPeer(id) {
-    if (videoMember === 0) {
-      const peer = new Peer({
-        initiator: true,
-        trickle: false,
-        config: {},
-        stream: stream,
-      });
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      config: {},
+      stream: stream,
+    });
 
-      peer.on("signal", (data) => {
-        socket.current.emit("callUser", {
-          userToCall: id,
-          signalData: data,
-          from: yourID,
-        });
+    peer.on("signal", (data) => {
+      socket.current.emit("rtc_callUser", {
+        userToCall: id,
+        signalData: data,
+        from: yourID,
       });
+    });
 
-      peer.on("stream", (stream) => {
-        if (partnerVideo.current) {
-          partnerVideo.current.srcObject = stream;
-        }
-      });
+    peer.on("stream", (stream) => {
+      if (partnerVideo.current) {
+        partnerVideo.current.srcObject = stream;
+      }
+    });
 
-      socket.current.on("callAccepted", (signal) => {
-        setCallAccepted(true);
-        peer.signal(signal);
-      });
-    }
-  }
-
-  function deleteThis() {
-    const div = document.getElementById("noNeed");
-    div.remove();
+    socket.current.on("rtc_callAccepted", (signal) => {
+      setCallAccepted(true);
+      peer.signal(signal);
+    });
   }
 
   function acceptCall() {
     setCallAccepted(true);
-    setVideoMember(videoMember + 1);
-    const div = document.getElementById("noNeed");
-    div.remove();
     const peer = new Peer({
       initiator: false,
       trickle: false,
       stream: stream,
     });
     peer.on("signal", (data) => {
-      socket.current.emit("acceptCall", { signal: data, to: caller });
+      socket.current.emit("rtc_acceptCall", { signal: data, to: caller });
     });
 
     peer.on("stream", (stream) => {
@@ -144,34 +147,42 @@ function Rtc() {
   }
 
   let incomingCall;
-  console.log(RTCPeerConnection.generateCertificate());
   if (receivingCall) {
     incomingCall = (
-      <div id="noNeed">
-        <h1>통화를 시작하시겠습니까?</h1>
-        <div>
-          <button onClick={acceptCall}>Yes</button>
-          <button onClick={deleteThis}>No</button>
-        </div>
+      <div>
+        <h1>{caller}</h1>
+        <button onClick={acceptCall}>Accept</button>
       </div>
     );
   }
+
+  function callIsComing(key) {
+    if (caller === "") {
+      callPeer(key);
+      console.log("not my key : " + key);
+      setCaller("1");
+      openModal();
+    }
+  }
+
   return (
     <>
       <Container>
         <Row>{PartnerVideo}</Row>
+      </Container>
+      <MainContainer>
+        <Row>{UserVideo}</Row>A
         <div>
           {Object.keys(users).map((key) => {
             if (key === yourID) {
               return null;
+              console.log("This is my key : " + key);
             }
-            return callPeer(key);
+            return <button onClick={() => callPeer(key)}>Call {key}</button>;
+            console.log("Not my key : " + key);
           })}
         </div>
         <div>{incomingCall}</div>
-      </Container>
-      <MainContainer>
-        <Row>{UserVideo}</Row>
       </MainContainer>
     </>
   );
