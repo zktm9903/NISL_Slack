@@ -1,5 +1,5 @@
 import produce from "immer";
-import { pullAllRoom } from "../pullDataFunc/pullData";
+import { decrypt } from "../crypto";
 
 const INIT_SOCKET = "roomAndChannel/INIT_SOCKET";
 const SET_MYID = "roomAndChannel/SET_MYID";
@@ -9,23 +9,23 @@ const ADD_CHANNEL = "roomAndChannel/ADD_CHANNEL";
 const SELECT_CHANNEL = "roomAndChannel/SELECT_CHANNEL";
 const RECEIVE_CHAT = "roomAndChannel/RECEIVE_CHAT";
 const PULL_ROOM = "roomAndChannel/PULL_ROOM";
-const LOGOUT = "roomAndChannel/LOGOUT"
+const LOGOUT = "roomAndChannel/LOGOUT";
 //비디오 타입 추가
 const ADD_VIDEO = "roomAndChannel/ADD_VIDEO";
 const SELECT_VIDEO = "roomAndChannel/SELECT_VIDEO";
 
 export const logout = () => {
-  return ({
+  return {
     type: LOGOUT,
-  })
-}
+  };
+};
 
 export const pullRoom = (rooms) => {
-  return ({
+  return {
     type: PULL_ROOM,
     rooms: rooms,
-  })
-}
+  };
+};
 
 export const initSocket = (socket) => ({
   type: INIT_SOCKET,
@@ -89,7 +89,7 @@ let nextRoomId = 1;
 
 const initialState = {
   socket: null,
-  myid: '',
+  myid: "",
   selectRoom: 0,
   selectChannel: 0,
   rooms: [
@@ -165,16 +165,17 @@ export default function roomAndChannel(state = initialState, action) {
       nextRoomId = 1;
       state.socket.disconnect();
       return {
-        ...state, socket: null,
-        myid: '',
+        ...state,
+        socket: null,
+        myid: "",
         selectRoom: 0,
         selectChannel: 0,
-        rooms: []
-      }
+        rooms: [],
+      };
     case INIT_SOCKET:
       return { ...state, socket: action.socket };
     case PULL_ROOM:
-      return { ...state, rooms: action.rooms }
+      return { ...state, rooms: action.rooms };
     case SET_MYID:
       return { ...state, myid: action.id };
     case ADD_ROOM:
@@ -205,6 +206,8 @@ export default function roomAndChannel(state = initialState, action) {
           });
         }
       });
+
+      action.chat.content = decrypt(action.chat.content, "81651647116"); // 복호화
       return produce(state, (draft) => {
         draft.rooms[sendRoom - 1].channels[sendChannel - 1].chat.push(
           action.chat

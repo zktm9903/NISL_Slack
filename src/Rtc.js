@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
+import * as faceapi from "face-api.js";
 
 const Container = styled.div`
   height: 30vh;
@@ -27,6 +28,8 @@ const MainVideo = styled.video`
 const Row = styled.div`
   text-align: center;
   width: 100%;
+  margin-bottom: 20px;
+  color: white;
 `;
 
 const Video = styled.video`
@@ -44,23 +47,14 @@ function Rtc() {
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
 
-  //모달용 state
-  const [showModal, setShowModal] = useState(false);
+  //face_api
+  const [faceEmotion, setFaceEmotion] = useState("");
 
-  const openModal = () => {
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  const userVideo = useRef();
-  const partnerVideo = useRef();
+  const userVideo = useRef(null);
+  const partnerVideo = useRef(null);
   const socket = useRef();
 
   useEffect(() => {
-    console.log(socket);
     socket.current = io.connect("/");
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
@@ -91,6 +85,8 @@ function Rtc() {
   }, []);
 
   function callPeer(id) {
+    const div = document.getElementById("justUse");
+    div.remove();
     const peer = new Peer({
       initiator: true,
       trickle: false,
@@ -119,6 +115,8 @@ function Rtc() {
   }
 
   function acceptCall() {
+    const div = document.getElementById("justUse");
+    div.remove();
     setCallAccepted(true);
     const peer = new Peer({
       initiator: false,
@@ -136,14 +134,56 @@ function Rtc() {
     peer.signal(callerSignal);
   }
 
+  useEffect(() => {
+    const loadModels = async () => {
+      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+      await faceapi.nets.faceExpressionNet.loadFromUri("/models");
+    };
+    loadModels();
+    return () => {
+      if (partnerVideo?.current) {
+        console.log("Cleaning up stream tracks...");
+        partnerVideo.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (partnerVideo?.current) {
+      partnerVideo.current.addEventListener("play", playCallback);
+    }
+  });
+
+  //face-api
+  let interval;
+  const playCallback = useCallback(() => {
+    interval = setInterval(faceDetection, 1000);
+  }, []);
+
+  const faceDetection = useCallback(async () => {
+    if (partnerVideo.current) {
+      const detections = await faceapi
+        .detectSingleFace(
+          partnerVideo.current,
+          new faceapi.TinyFaceDetectorOptions()
+        )
+        .withFaceExpressions();
+      setFaceEmotion(detections?.expressions.asSortedArray()[0].expression);
+    }
+  }, [partnerVideo]);
+
+  //face-api
+
   let UserVideo;
   if (stream) {
     UserVideo = <MainVideo playsInline muted ref={userVideo} autoPlay />;
   }
 
   let PartnerVideo;
+  let PlusEmotion;
   if (callAccepted) {
     PartnerVideo = <Video playsInline ref={partnerVideo} autoPlay />;
+    PlusEmotion = faceEmotion;
   }
 
   let incomingCall;
@@ -156,33 +196,30 @@ function Rtc() {
     );
   }
 
-  function callIsComing(key) {
-    if (caller === "") {
-      callPeer(key);
-      console.log("not my key : " + key);
-      setCaller("1");
-      openModal();
-    }
-  }
-
+  let cnt = 0;
   return (
     <>
       <Container>
-        <Row>{PartnerVideo}</Row>
+        <Row>
+          {PartnerVideo}
+          {PlusEmotion}
+        </Row>
+        <div id="justUse">
+          {incomingCall}
+          {Object.keys(users).map((key) => {
+            cnt++;
+            if (cnt < 4) {
+              return;
+            }
+            if (key === yourID) {
+              return null;
+            }
+            return <button onClick={() => callPeer(key)}>Call {key}</button>;
+          })}
+        </div>
       </Container>
       <MainContainer>
         <Row>{UserVideo}</Row>A
-        <div>
-          {Object.keys(users).map((key) => {
-            if (key === yourID) {
-              return null;
-              console.log("This is my key : " + key);
-            }
-            return <button onClick={() => callPeer(key)}>Call {key}</button>;
-            console.log("Not my key : " + key);
-          })}
-        </div>
-        <div>{incomingCall}</div>
       </MainContainer>
     </>
   );
